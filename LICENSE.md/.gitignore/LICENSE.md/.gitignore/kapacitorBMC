@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+import sys
+import os
+import json
+from subprocess import Popen, PIPE, STDOUT
+from datetime import datetime
+os.environ["IMPACT_SOLUTIONS_HOME"] = "/opt/app/instances/emon/bmc/Impact"
+os.environ["MCELL_HOME"] = "/opt/app/instances/emon/bmc/Impact/server"
+os.environ["PAYH"] = "/opt/app/instances/emon/bmc/Impact/server/bin"
+data=sys.stdin.read()
+alert_data = json.loads(data)
+level = alert_data["level"]
+if level == "CRITICAL":
+    host_name = alert_data["data"]["series"][0]["tags"]["host"]
+    class_name = alert_data["data"]["series"][0]["name"]
+    mc_object=alert_data["data"]["series"][0]["tags"]["sysmonDiskPath"]
+    mc_parameter=alert_data["data"]["series"][0]["tags"]["mc_parameter"]
+    mc_parameter_value=alert_data["data"]["series"][0]["values"][0][1]
+    alert_threshold_duration=alert_data["duration"]
+    mc_incident_time=datetime.strptime(alert_data["time"], "%Y-%m-%dT%H:%M:%SZ").strftime('%s')
+    alert_threshold=alert_data["data"]["series"][0]["tags"]["critical"]
+    message=alert_data["data"]["series"][0]["tags"]["text"]
+    cmd=(' -n pncell_pnet001tst -a KAPACITOR_EV -r '+alert_data["level"]+' -m \"'+message+'\" -v -b \' mc_host=\"'+host_name+'\";mc_object_class=\"'+class_name+'\";mc_object=\"'+mc_object+'@'+host_name+'\";mc_parameter=\"'+mc_parameter+'\";alert_rule_name=\"sysmonDiskUsedPct\";alert_threshold=\"'+str(int(alert_threshold)/100)+'\";mc_parameter_value=\"'+str(mc_parameter_value/100)+'\";alert_threshold_duration=\"'+str(alert_threshold_duration)+'\";mc_incident_time=\"'+str(mc_incident_time)+'\"\'')
+    p=Popen('/opt/app/instances/emon/bmc/Impact/server/bin/msend  {0}'.format(cmd), shell=True, stdout=PIPE, stderr=STDOUT)
+
+
+if level == "WARNING":
+    host_name = alert_data["data"]["series"][0]["tags"]["host"]
+    class_name = alert_data["data"]["series"][0]["name"]
+    mc_object=alert_data["data"]["series"][0]["tags"]["sysmonDiskPath"]
+    mc_parameter=alert_data["data"]["series"][0]["tags"]["mc_parameter"]
+    mc_parameter_value=alert_data["data"]["series"][0]["values"][0][1]
+    alert_threshold_duration=alert_data["duration"]
+    mc_incident_time=datetime.strptime(alert_data["time"], "%Y-%m-%dT%H:%M:%SZ").strftime('%s')
+    alert_threshold=alert_data["data"]["series"][0]["tags"]["major"]
+    message=alert_data["data"]["series"][0]["tags"]["text"]
+    cmd=(' -n pncell_pnet001tst -a KAPACITOR_EV -r MAJOR -m \"'+message+'\" -v -b \' mc_host=\"'+host_name+'\";mc_object_class=\"'+class_name+'\";mc_object=\"'+mc_object+'@'+host_name+'\";mc_parameter=\"'+mc_parameter+'\";alert_rule_name=\"sysmonDiskUsedPct\";alert_threshold=\"'+str(int(alert_threshold)/100)+'\";mc_parameter_value=\"'+str(mc_parameter_value/100)+'\";alert_threshold_duration=\"'+str(alert_threshold_duration)+'\";mc_incident_time=\"'+str(mc_incident_time)+'\"\'')
+    p=Popen('/opt/app/instances/emon/bmc/Impact/server/bin/msend  {0}'.format(cmd), shell=True, stdout=PIPE, stderr=STDOUT)
+
+
+if level == "INFO":
+    host_name = alert_data["data"]["series"][0]["tags"]["host"]
+    class_name = alert_data["data"]["series"][0]["name"]
+    mc_object=alert_data["data"]["series"][0]["tags"]["sysmonDiskPath"]
+    mc_parameter=alert_data["data"]["series"][0]["tags"]["mc_parameter"]
+    mc_parameter_value=alert_data["data"]["series"][0]["values"][0][1]
+    alert_threshold_duration=alert_data["duration"]
+    mc_incident_time=datetime.strptime(alert_data["time"], "%Y-%m-%dT%H:%M:%SZ").strftime('%s')
+    alert_threshold=alert_data["data"]["series"][0]["tags"]["minor"]
+    message=alert_data["data"]["series"][0]["tags"]["text"]
+    cmd=(' -n pncell_pnet001tst -a KAPACITOR_EV -r MINOR -m \"'+message+'\" -v -b \' mc_host=\"'+host_name+'\";mc_object_class=\"'+class_name+'\";mc_object=\"'+mc_object+'@'+host_name+'\";mc_parameter=\"'+mc_parameter+'\";alert_rule_name=\"sysmonDiskUsedPct\";alert_threshold=\"'+str(int(alert_threshold)/100)+'\";mc_parameter_value=\"'+str(mc_parameter_value/100)+'\";alert_threshold_duration=\"'+str(alert_threshold_duration)+'\";mc_incident_time=\"'+str(mc_incident_time)+'\"\'')
+    p=Popen('/opt/app/instances/emon/bmc/Impact/server/bin/msend  {0}'.format(cmd), shell=True, stdout=PIPE, stderr=STDOUT)
+
+if level == "OK":
+    host_name = alert_data["data"]["series"][0]["tags"]["host"]
+    class_name = alert_data["data"]["series"][0]["name"]
+    mc_object=alert_data["data"]["series"][0]["tags"]["sysmonDiskPath"]
+    mc_parameter=alert_data["data"]["series"][0]["tags"]["mc_parameter"]
+    mc_parameter_value=alert_data["data"]["series"][0]["values"][0][1]
+    alert_threshold_duration=alert_data["duration"]
+    mc_incident_time=datetime.strptime(alert_data["time"], "%Y-%m-%dT%H:%M:%SZ").strftime('%s')
+    message=alert_data["data"]["series"][0]["tags"]["text"]
+    cmd=(' -n pncell_pnet001tst -a KAPACITOR_EV -r '+alert_data["level"]+' -m \"'+message+'\" -v -b \' mc_host=\"'+host_name+'\";mc_object_class=\"'+class_name+'\";mc_object=\"'+mc_object+'@'+host_name+'\";mc_parameter=\"'+mc_parameter+'\";alert_rule_name=\"sysmonDiskUsedPct\";alert_threshold=\" \";mc_parameter_value=\"'+str(mc_parameter_value/100)+'\";alert_threshold_duration=\"'+str(alert_threshold_duration)+'\";mc_incident_time=\"'+str(mc_incident_time)+'\"\'')
+    p=subprocess.Popen('/opt/app/instances/emon/bmc/Impact/server/bin/msend  {0}'.format(cmd), shell=True, stdout=PIPE, stderr=STDOUT)
+
+f = open('/opt/app/instances/emon/kapacitor/out', 'a')
+f.write(cmd+str(p.communicate()[0])+'\n')
+f.close()
+
